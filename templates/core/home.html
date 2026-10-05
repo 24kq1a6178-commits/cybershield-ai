@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Home — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- HERO -->
+    <section class="hero">
+        <h1>CyberShield AI</h1>
+        <p>Smart Digital Safety System — Detect phishing links, suspicious messages, and weak passwords before they harm you.</p>
+
+        <!-- UNIVERSAL SEARCH BAR -->
+        <form class="search-form" method="get" action="{% url 'core:search' %}" id="universal-search">
+            <input type="text" name="q" placeholder="Paste a link or message to scan…" autofocus required>
+            <button type="submit">Scan 🔍</button>
+        </form>
+        <p class="search-hint">We automatically detect whether it's a URL or a message.</p>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats-bar">
+        <div class="stat-item">
+            <div class="number">{{ total_scans }}</div>
+            <div class="label">Total Scans</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">{{ threats_detected }}</div>
+            <div class="label">Threats Detected</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">{{ safe_scans }}</div>
+            <div class="label">Safe Results</div>
+        </div>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+    <h2 class="section-title">⚡ Quick Actions</h2>
+    <section class="cards">
+        <a href="{% url 'scanner:scan_url' %}" class="card">
+            <span class="icon">🔍</span>
+            <h3>Scan a URL</h3>
+            <p>Check if a website link is safe, suspicious, or dangerous.</p>
+        </a>
+        <a href="{% url 'scanner:scan_message' %}" class="card">
+            <span class="icon">💬</span>
+            <h3>Scan a Message</h3>
+            <p>Analyze SMS or email text for phishing and fraud signs.</p>
+        </a>
+        <a href="{% url 'scanner:check_password' %}" class="card">
+            <span class="icon">🔑</span>
+            <h3>Check Password</h3>
+            <p>See how strong your password is and get tips to improve it.</p>
+        </a>
+    </section>
+
+    <!-- RECENT THREATS -->
+    {% if recent_threats %}
+    <h2 class="section-title">⚠️ Recent Threats</h2>
+    <div>
+        {% for scan in recent_threats %}
+        <div class="result-card {{ scan.verdict }}">
+            <span class="badge {{ scan.verdict }}">{{ scan.verdict }}</span>
+            <strong style="margin-left:10px;">{{ scan.scan_type|upper }}</strong>
+            <p style="margin-top:8px; color:#a0a0a0;">{{ scan.input_value|truncatechars:120 }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

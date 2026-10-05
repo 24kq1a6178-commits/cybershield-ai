@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}History — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <section class="hero">
+        <h1>📜 Scan History</h1>
+        <p>All scans performed on this system.</p>
+    </section>
+
+    {% if scans %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Input</th>
+                <th>Verdict</th>
+                <th>Score</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scan in scans %}
+            <tr>
+                <td>{{ scan.scan_type|upper }}</td>
+                <td>{{ scan.input_value|truncatechars:60 }}</td>
+                <td><span class="badge {{ scan.verdict }}">{{ scan.verdict }}</span></td>
+                <td>{{ scan.risk_score }}/100</td>
+                <td>{{ scan.created_at|date:"Y-m-d H:i" }}</td>
+                <td><a href="{% url 'scanner:result' scan.id %}">View →</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+        <h3>No scans yet</h3>
+        <p>Run your first scan from the <a href="{% url 'core:home' %}" style="color:#00d2ff;">home page</a>.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

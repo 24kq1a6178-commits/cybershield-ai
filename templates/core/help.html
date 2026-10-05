@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Help — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:850px;">
+
+    <section class="hero">
+        <h1>Help & FAQ</h1>
+        <p>Answers to common questions about using CyberShield AI.</p>
+    </section>
+
+    <div style="margin-top:30px;">
+        {% for faq in faqs %}
+        <div class="faq-item">
+            <div class="faq-question">{{ faq.question }}</div>
+            <div class="faq-answer">{{ faq.answer }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-card" style="max-width:100%; margin-top:40px;">
+        <h2>📚 Quick Guides</h2>
+
+        <h3 style="color:#00d2ff; margin-top:20px;">How to spot a phishing link</h3>
+        <ul style="color:#c0c0c0; line-height:1.9; padding-left:20px;">
+            <li>Check the domain carefully — <em>paypa1.com</em> ≠ <em>paypal.com</em></li>
+            <li>Look for HTTPS — but remember, HTTPS alone doesn't mean safe</li>
+            <li>Beware of shortened links (bit.ly, tinyurl) — scan them first</li>
+            <li>Hover over links to see the real destination</li>
+        </ul>
+
+        <h3 style="color:#00d2ff; margin-top:25px;">What makes a strong password?</h3>
+        <ul style="color:#c0c0c0; line-height:1.9; padding-left:20px;">
+            <li>At least 12 characters</li>
+            <li>Mix uppercase, lowercase, numbers, and symbols</li>
+            <li>Avoid dictionary words, names, or dates</li>
+            <li>Use a unique password for every account</li>
+            <li>Consider a password manager</li>
+        </ul>
+
+        <h3 style="color:#00d2ff; margin-top:25px;">If a scan says "Dangerous"</h3>
+        <ul style="color:#c0c0c0; line-height:1.9; padding-left:20px;">
+            <li>Do NOT click the link or download attachments</li>
+            <li>Do NOT reply or enter personal information</li>
+            <li>Report phishing emails to your email provider</li>
+            <li>If it came from work, notify your IT/security team</li>
+        </ul>
+    </div>
+
+</div>
+{% endblock %}

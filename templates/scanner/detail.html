@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan Details - CyberShield AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .back-link {
+            display: inline-block;
+            color: #00d2ff;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #00d2ff;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #00d2ff;
+        }
+        .info-box .row { margin: 8px 0; }
+        .info-box .label { color: #a0a0a0; margin-right: 10px; }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge.critical { background: #ff0044; color: #fff; }
+        .badge.high { background: #ff6600; color: #fff; }
+        .badge.medium { background: #ffcc00; color: #000; }
+        .badge.low { background: #00cc66; color: #000; }
+        .badge.info { background: #3a7bd5; color: #fff; }
+        .badge.completed { background: #00cc66; color: #000; }
+        .badge.failed { background: #ff0044; color: #fff; }
+        .badge.running { background: #ffcc00; color: #000; }
+        .badge.pending { background: #808080; color: #fff; }
+        h2 { margin: 30px 0 15px; color: #00d2ff; }
+        .vuln {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00d2ff;
+        }
+        .vuln.critical { border-left-color: #ff0044; }
+        .vuln.high { border-left-color: #ff6600; }
+        .vuln.medium { border-left-color: #ffcc00; }
+        .vuln.low { border-left-color: #00cc66; }
+        .vuln h3 { margin-bottom: 10px; }
+        .vuln p { color: #b0b0b0; line-height: 1.6; margin-bottom: 10px; }
+        .rec {
+            background: rgba(0, 210, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 3px solid #00d2ff;
+            color: #c0e8ff;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #a0a0a0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'scanner:index' %}" class="back-link">← Back to Scanner</a>
+        <h1>Scan Details</h1>
+
+        <div class="info-box">
+            <div class="row"><span class="label">Target:</span> {{ scan.target }}</div>
+            <div class="row"><span class="label">Type:</span> {{ scan.get_scan_type_display }}</div>
+            <div class="row"><span class="label">Status:</span> <span class="badge {{ scan.status }}">{{ scan.status }}</span></div>
+            <div class="row"><span class="label">Risk Level:</span>
+                {% if scan.risk_level %}
+                    <span class="badge {{ scan.risk_level }}">{{ scan.risk_level }}</span>
+                {% else %}—{% endif %}
+            </div>
+            <div class="row"><span class="label">Started:</span> {{ scan.created_at }}</div>
+            {% if scan.completed_at %}
+            <div class="row"><span class="label">Completed:</span> {{ scan.completed_at }}</div>
+            {% endif %}
+            {% if scan.duration %}
+            <div class="row"><span class="label">Duration:</span> {{ scan.duration }}s</div>
+            {% endif %}
+            {% if scan.error_message %}
+            <div class="row" style="color:#ff6b6b;"><span class="label">Error:</span> {{ scan.error_message }}</div>
+            {% endif %}
+        </div>
+
+        <h2>Vulnerabilities ({{ vulnerabilities|length }})</h2>
+
+        {% if vulnerabilities %}
+            {% for v in vulnerabilities %}
+            <div class="vuln {{ v.severity }}">
+                <h3>{{ v.name }} <span class="badge {{ v.severity }}">{{ v.severity }}</span></h3>
+                <p>{{ v.description }}</p>
+                {% if v.recommendation %}
+                <div class="rec"><strong>Recommendation:</strong> {{ v.recommendation }}</div>
+                {% endif %}
+                {% if v.cve_id %}
+                <p style="margin-top:10px; color:#00d2ff;">CVE: {{ v.cve_id }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">
+                <h3>✅ No vulnerabilities found</h3>
+                <p>This scan didn't detect any issues.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

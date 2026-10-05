@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Result — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <a href="{% url 'scanner:history' %}" style="color:#00d2ff; text-decoration:none;">← Back to History</a>
+
+    <section class="hero" style="padding-top:20px;">
+        <h1>Scan Result</h1>
+    </section>
+
+    <div class="result-card {{ scan.verdict }}">
+        <h2>
+            {{ scan.get_scan_type_display|default:scan.scan_type|upper }}
+            <span class="badge {{ scan.verdict }}">{{ scan.verdict|upper }}</span>
+        </h2>
+        <p style="margin-top:12px; color:#a0a0a0;">Target: <code>{{ scan.input_value }}</code></p>
+        <p style="color:#a0a0a0;">Risk Score: <strong>{{ scan.risk_score }}/100</strong></p>
+        <p style="color:#a0a0a0;">Scanned: {{ scan.created_at|date:"Y-m-d H:i:s" }}</p>
+    </div>
+
+    {% if scan.reasons %}
+    <h2 class="section-title">⚠️ Reasons</h2>
+    {% for reason in scan.reasons %}
+        <div class="vuln-item"><p>{{ reason }}</p></div>
+    {% endfor %}
+    {% endif %}
+
+    {% if scan.recommendations %}
+    <h2 class="section-title">✅ Recommendations</h2>
+    <div class="recommendation">{{ scan.recommendations }}</div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Scan Message — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <section class="hero">
+        <h1>💬 Message Scanner</h1>
+        <p>Paste an SMS, WhatsApp message, or email to check for phishing and fraud.</p>
+    </section>
+
+    <form class="form-card" id="scan-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="message">Message text</label>
+            <textarea id="message" name="message" placeholder="Paste the full message here…" required autofocus></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Analyze Message</button>
+    </form>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing the message…</p>
+    </div>
+
+    <div id="results" style="margin-top:30px;"></div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('scan-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('message').value.trim();
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+
+    loading.classList.add('active');
+    results.innerHTML = '';
+
+    try {
+        const res = await fetch("{% url 'scanner:scan_message' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf,
+            },
+            body: JSON.stringify({ message: msg }),
+        });
+        const data = await res.json();
+        loading.classList.remove('active');
+
+        if (data.error) {
+            results.innerHTML = `<div class="result-card dangerous"><h3>Error</h3><p>${data.error}</p></div>`;
+            return;
+        }
+
+        const r = data.results || {};
+        const verdict = r.risk_level || 'safe';
+        let html = `
+            <div class="result-card ${verdict}">
+                <h2>Message Analysis <span class="badge ${verdict}">${verdict.toUpperCase()}</span></h2>
+                <p style="margin-top:10px;">Risk score: <strong>${r.risk_score || 0}/100</strong></p>
+            </div>
+        `;
+
+        if (r.vulnerabilities && r.vulnerabilities.length) {
+            for (const v of r.vulnerabilities) {
+                html += `
+                    <div class="vuln-item ${v.severity}">
+                        <h4>${v.name} <span class="badge ${v.severity}">${v.severity}</span></h4>
+                        <p>${v.description}</p>
+                        ${v.recommendation ? `<div class="recommendation"><strong>Tip:</strong> ${v.recommendation}</div>` : ''}
+                    </div>
+                `;
+            }
+        } else {
+            html += `<div class="empty"><h3>✅ No red flags found</h3><p>This message looks normal based on our checks.</p></div>`;
+        }
+
+        results.innerHTML = html;
+    } catch (err) {
+        loading.classList.remove('active');
+        results.innerHTML = `<div class="result-card dangerous"><h3>Network Error</h3><p>${err.message}</p></div>`;
+    }
+});
+</script>
+{% endblock %}

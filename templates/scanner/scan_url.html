@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Scan URL — CyberShield AI{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <section class="hero">
+        <h1>🔍 URL Scanner</h1>
+        <p>Paste any link to check if it's safe, suspicious, or dangerous.</p>
+    </section>
+
+    <form class="form-card" id="scan-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="target">URL to scan</label>
+            <input type="text" id="target" name="target" placeholder="https://example.com" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Scan URL</button>
+    </form>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing the URL…</p>
+    </div>
+
+    <div id="results" style="margin-top:30px;"></div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('scan-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const target = document.getElementById('target').value.trim();
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+
+    loading.classList.add('active');
+    results.innerHTML = '';
+
+    try {
+        const res = await fetch("{% url 'scanner:scan_url' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrf,
+            },
+            body: JSON.stringify({ target: target, scan_type: 'url' }),
+        });
+        const data = await res.json();
+        loading.classList.remove('active');
+
+        if (data.error) {
+            results.innerHTML = `<div class="result-card dangerous"><h3>Error</h3><p>${data.error}</p></div>`;
+            return;
+        }
+
+        const r = data.results || {};
+        const verdict = r.risk_level || 'safe';
+        let html = `
+            <div class="result-card ${verdict}">
+                <h2>Scan Result <span class="badge ${verdict}">${verdict.toUpperCase()}</span></h2>
+                <p style="margin-top:10px; color:#a0a0a0;">Target: <code>${r.target}</code></p>
+            </div>
+        `;
+
+        if (r.vulnerabilities && r.vulnerabilities.length) {
+            html += '<h2 class="section-title">⚠️ Findings</h2>';
+            for (const v of r.vulnerabilities) {
+                html += `
+                    <div class="vuln-item ${v.severity}">
+                        <h4>${v.name} <span class="badge ${v.severity}">${v.severity}</span></h4>
+                        <p>${v.description}</p>
+                        ${v.recommendation ? `<div class="recommendation"><strong>Recommendation:</strong> ${v.recommendation}</div>` : ''}
+                    </div>
+                `;
+            }
+        } else {
+            html += `<div class="empty"><h3>✅ No issues detected</h3><p>This URL looks safe based on our checks.</p></div>`;
+        }
+
+        results.innerHTML = html;
+    } catch (err) {
+        loading.classList.remove('active');
+        results.innerHTML = `<div class="result-card dangerous"><h3>Network Error</h3><p>${err.message}</p></div>`;
+    }
+});
+</script>
+{% endblock %}
